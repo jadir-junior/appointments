@@ -1,6 +1,7 @@
 import React from "react";
 import { createContainer } from "./domManipulators";
 import { CustomerForm } from "../src/CustomerForm";
+import ReactTestUtils from "react-dom/test-utils";
 
 describe("CustomerForm", () => {
   let render, container;
@@ -48,8 +49,20 @@ describe("CustomerForm", () => {
     expect(firstNameField().id).toEqual("firstName");
   });
 
-  it.skip("renders a label for the first name field", () => {
-    render();
+  it("renders a label for the first name field", () => {
+    render(<CustomerForm />);
+    expect(labelFor("firstName")).not.toBeNull();
     expect(labelFor("firstName").textContent).toEqual("First name");
+  });
+
+  it("saves existing first name when submitted", async () => {
+    expect.hasAssertions();
+    render(
+      <CustomerForm
+        firstName="Ashley"
+        onSubmit={({ firstName }) => expect(firstName).toEqual("Ashley")}
+      />
+    );
+    await ReactTestUtils.Simulate.submit(form("customer"));
   });
 });
