@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --watchAll",
+    "test:customerform": "jest test/CustomerForm.test.js --watchAll",
     "build": "webpack"
   },
   "author": "",
