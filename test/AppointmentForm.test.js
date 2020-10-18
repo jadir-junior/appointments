@@ -1,4 +1,5 @@
 import React from "react";
+import ReactTestUtils from "react-dom/test-utils";
 import { createContainer } from "./domManipulators";
 import { AppointmentForm } from "../src/AppointmentForm";
 
@@ -17,6 +18,9 @@ describe("AppointmentForm", () => {
     const options = Array.from(dropdownNode.childNodes);
     return options.find((option) => option.textContent === textContent);
   };
+
+  const labelFor = (formElement) =>
+    container.querySelector(`label[for="${formElement}"]`);
 
   it("renders a form", () => {
     render(<AppointmentForm />);
@@ -54,6 +58,42 @@ describe("AppointmentForm", () => {
       );
       const option = findOption(field("service"), "Blow-dry");
       expect(option.selected).toBeTruthy();
+    });
+
+    it("renders a label to select service field", () => {
+      render(<AppointmentForm />);
+      expect(labelFor("service")).not.toBeNull();
+      expect(labelFor("service").textContent).toEqual("Service");
+    });
+
+    it("assigns an id that matches the label id the select service field", () => {
+      render(<AppointmentForm />);
+      expect(field("service").id).toEqual("service");
+    });
+
+    it("save existing value when submitted select service field", async () => {
+      expect.hasAssertions();
+      render(
+        <AppointmentForm
+          service="Blow-dry"
+          onSubmit={(props) => expect(props["service"]).toEqual("Blow-dry")}
+        />
+      );
+      await ReactTestUtils.Simulate.submit(form("appointment"));
+    });
+
+    it("saves new value when submitted select service field", async () => {
+      expect.hasAssertions();
+      render(
+        <AppointmentForm
+          service="Blow-dry"
+          onSubmit={(props) => expect(props["service"]).toEqual("Cut")}
+        />
+      );
+      await ReactTestUtils.Simulate.change(field("service"), {
+        target: { value: "Cut" },
+      });
+      await ReactTestUtils.Simulate.submit(form("appointment"));
     });
   });
 });
