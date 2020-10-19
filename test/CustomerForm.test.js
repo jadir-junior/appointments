@@ -19,6 +19,27 @@ describe("CustomerForm", () => {
     expect(formElement.type).toEqual("text");
   };
 
+  const spy = () => {
+    let receivedArguments;
+    return {
+      fn: (...args) => (receivedArguments = args),
+      receivedArguments: () => receivedArguments,
+      receivedArgument: (n) => receivedArguments[n],
+    };
+  };
+
+  expect.extend({
+    toHaveBeenCalled(received) {
+      if (received.receivedArguments() === undefined) {
+        return {
+          pass: false,
+          message: () => "Spy was not called.",
+        };
+      }
+      return { pass: true, message: () => "Spy was called." };
+    },
+  });
+
   const itRendersAsTextBox = (fieldName) =>
     it("renders as a text box", () => {
       render(<CustomerForm />);
@@ -46,17 +67,15 @@ describe("CustomerForm", () => {
 
   const itSubmitsExistingValue = (fieldName, value) =>
     it("saves existing value when submitted", async () => {
-      let submitArg;
+      const submitSpy = spy();
 
       render(
-        <CustomerForm
-          {...{ [fieldName]: value }}
-          onSubmit={(customer) => (submitArg = customer)}
-        />
+        <CustomerForm {...{ [fieldName]: value }} onSubmit={submitSpy.fn} />
       );
       await ReactTestUtils.Simulate.submit(form("customer"));
 
-      expect(submitArg[fieldName]).toEqual(value);
+      expect(submitSpy).toHaveBeenCalled();
+      expect(submitSpy.receivedArgument(0)[fieldName]).toEqual(value);
     });
 
   const itSubmitsNewValue = (fieldName, value) =>
