@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 
 export const AppointmentForm = ({
   selectableServices,
@@ -17,6 +17,15 @@ export const AppointmentForm = ({
       service: target.value,
     });
   };
+
+  const handleStartsAtChange = useCallback(
+    ({ target: { value } }) =>
+      setAppointment((appointment) => ({
+        ...appointment,
+        startsAt: parseInt(value),
+      })),
+    []
+  );
 
   return (
     <form id="appointment" onSubmit={() => onSubmit(appointment)}>
@@ -38,7 +47,9 @@ export const AppointmentForm = ({
         salonClosesAt={salonClosesAt}
         today={today}
         availableTimeSlots={availableTimeSlots}
+        handleChange={handleStartsAtChange}
       />
+      <button type="submit">Add</button>
     </form>
   );
 };
@@ -99,6 +110,7 @@ const TimeSlotTable = ({
   salonClosesAt,
   today,
   availableTimeSlots,
+  handleChange,
 }) => {
   const timeSlots = dailyTimeSlots(salonOpensAt, salonClosesAt);
   const dates = weeklyDateValues(today);
@@ -121,7 +133,8 @@ const TimeSlotTable = ({
                 <RadioButtonIfAvailable
                   availableTimeSlots={availableTimeSlots}
                   date={date}
-                  timeSlot={timeSlot}
+                  checkedTimeSlot={timeSlot}
+                  handleChange={handleChange}
                 />
               </td>
             ))}
@@ -132,14 +145,28 @@ const TimeSlotTable = ({
   );
 };
 
-const RadioButtonIfAvailable = ({ availableTimeSlots, date, timeSlot }) => {
-  const startsAt = mergeDateAndTime(date, timeSlot);
+const RadioButtonIfAvailable = ({
+  availableTimeSlots,
+  date,
+  checkedTimeSlot,
+  handleChange,
+}) => {
+  const startsAt = mergeDateAndTime(date, checkedTimeSlot);
+  const isChecked = startsAt === checkedTimeSlot;
   if (
     availableTimeSlots.some(
       (availableTimeSlots) => availableTimeSlots.startsAt === startsAt
     )
   ) {
-    return <input name="startsAt" type="radio" value={startsAt} />;
+    return (
+      <input
+        name="startsAt"
+        type="radio"
+        value={startsAt}
+        checked={isChecked}
+        onChange={handleChange}
+      />
+    );
   }
   return null;
 };
